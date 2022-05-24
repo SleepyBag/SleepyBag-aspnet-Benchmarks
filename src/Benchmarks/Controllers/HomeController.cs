@@ -52,6 +52,9 @@ namespace Benchmarks.Controllers
         [HttpGet("plaintext")]
         public IActionResult Plaintext()
         {
+            Random waitTime = new Random();
+            int milliseconds = waitTime.Next(0, 400);
+            System.Threading.Thread.Sleep(milliseconds);
             return new PlainTextActionResult();
         }
 
