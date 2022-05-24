@@ -22,18 +22,17 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             Random waitTime = new Random();
-            int milliseconds = waitTime.Next(0, 2);
-            System.Threading.Thread.Sleep(milliseconds);
-
+            int milliseconds = waitTime.Next(0, 400);
+            await Task.Delay(milliseconds);
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                return WriteResponse(httpContext.Response);
+                await WriteResponse(httpContext.Response);
             }
 
-            return _next(httpContext);
+            await _next(httpContext);
         }
 
         public static Task WriteResponse(HttpResponse response)
