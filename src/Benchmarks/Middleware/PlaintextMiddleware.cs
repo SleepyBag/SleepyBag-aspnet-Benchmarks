@@ -30,6 +30,7 @@ namespace Benchmarks.Middleware
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 await WriteResponse(httpContext.Response);
+                return;
             }
 
             await _next(httpContext);
