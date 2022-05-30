@@ -25,7 +25,7 @@ namespace Benchmarks.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             Random waitTime = new Random();
-            int milliseconds = waitTime.Next(0, 100);
+            int milliseconds = waitTime.Next(0, 10);
             await Task.Delay(milliseconds);
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
