@@ -33,7 +33,8 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
     public static void AddOptionsToCommand(RootCommand command)
     {
         command.AddOption(AddressOption);
-        command.AddOption(PortOption);
+        command.AddOption(MinPortOption);
+        command.AddOption(MaxPortOption);
         command.AddOption(UseHttpsOption);
         command.AddOption(PathOption);
         command.AddOption(HttpVersionOption);
@@ -64,8 +65,8 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
         var options = new ClientOptions()
         {
             Address = parsed.GetValueForOption(AddressOption),
-            minPort = parsed.GetValueForOption(MinPortOption),
-            maxPort = parsed.GetValueForOption(MaxPortOption),
+            MinPort = parsed.GetValueForOption(MinPortOption),
+            MaxPort = parsed.GetValueForOption(MaxPortOption),
             UseHttps = parsed.GetValueForOption(UseHttpsOption),
             Path = parsed.GetValueForOption(PathOption),
             HttpVersion = parsed.GetValueForOption(HttpVersionOption),
