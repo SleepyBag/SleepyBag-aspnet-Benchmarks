@@ -14,8 +14,13 @@ class Program
 
     private const int c_SingleThreadRpsEstimate = 3000;
 
+    private static int minPort = 5000;
+    private static int maxPort = 5000;
+
+    private static Random random = new Random();
+
     private static ClientOptions s_options = null!;
-    private static Uri s_url = null!;
+    private static String s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
 
@@ -86,10 +91,14 @@ class Program
         BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
 
-        var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
-        s_url = new Uri(baseUrl + s_options.Path);
+        minPort = Int32.Parse(s_options.MinPort);
+        maxPort = Int32.Parse(s_options.MaxPort);
+
+        var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:" + "{0}";
+        s_url = baseUrl + s_options.Path;
+        var full_url = new Uri(s_url);
         Log("Base url: " + baseUrl);
-        Log("Full url: " + s_url);
+        Log("Full url: " + full_url);
 
         if (s_options.GeneratedStaticHeadersCount > 0 || s_options.GeneratedDynamicHeadersCount > 0)
         {
@@ -147,7 +156,7 @@ class Program
         }
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, s_url);
+        var request = CreateRequest(HttpMethod.Get, full_url);
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
@@ -230,7 +239,8 @@ class Program
     {
         return Measure(() => 
         {
-            var request = CreateRequest(HttpMethod.Get, s_url);
+            var port = random.Next(minPort, maxPort);
+            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, port)));
             return SendAsync(client, request);
         });
     }
@@ -239,7 +249,8 @@ class Program
     {
         return Measure(async () => 
         {
-            var request = CreateRequest(HttpMethod.Post, s_url);
+            var port = random.Next(minPort, maxPort);
+            var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, port)));
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)

@@ -6,7 +6,8 @@ public class ClientOptions
     public const int DefaultDuration = 15;
 
     public string? Address { get; set; }
-    public string? Port { get; set; }
+    public string? MinPort { get; set; }
+    public string? MaxPort { get; set; }
     public bool UseHttps { get; set; }
     public string? Path { get; set; }
     public Version? HttpVersion { get; set; }
@@ -31,7 +32,7 @@ public class ClientOptions
 
     public override string ToString()
     {
-        return $"Address={Address}; Port={Port}; UseHttps={UseHttps}; Path={Path}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; " +
+        return $"Address={Address}; MinPort={MinPort}, MaxPort={MaxPort}; UseHttps={UseHttps}; Path={Path}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; " +
             $"ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; " +
             $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
