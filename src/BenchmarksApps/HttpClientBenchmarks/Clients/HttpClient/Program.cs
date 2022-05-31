@@ -161,7 +161,7 @@ class Program
         BenchmarksEventSource.Register("http/requests", Operations.Sum, Operations.Sum, "Requests", "Number of requests", "n0");
         BenchmarksEventSource.Register("http/requests/badresponses", Operations.Sum, Operations.Sum, "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
         BenchmarksEventSource.Register("http/requests/errors", Operations.Sum, Operations.Sum, "Exceptions", "Number of exceptions", "n0");
-        BenchmarksEventSource.Register("http/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "Requests per second - mean", "n0");
+        BenchmarksEventSource.Register("http/rps/mean", Operations.Max, Operations.Sum, "Mean RPS", "Requests per second - mean", "n0");
 
         if (s_options.CollectRequestTimings)
         {
