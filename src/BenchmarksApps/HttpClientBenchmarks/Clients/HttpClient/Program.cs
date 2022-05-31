@@ -96,7 +96,7 @@ class Program
 
         var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:" + "{0}";
         s_url = baseUrl + s_options.Path;
-        var full_url = new Uri(s_url);
+        var full_url = new Uri(String.Format(s_url, minPort));
         Log("Base url: " + baseUrl);
         Log("Full url: " + full_url);
 
