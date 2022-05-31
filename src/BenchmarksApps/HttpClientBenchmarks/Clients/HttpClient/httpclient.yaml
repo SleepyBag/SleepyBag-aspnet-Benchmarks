@@ -1,0 +1,50 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+
+variables:
+    warmup: 15 #seconds -- default value *copied* to WRK, see notes below
+    duration: 15 #seconds -- default value *copied* to WRK
+    serverPort: 5000 # -- default value *copied* to WRK
+    httpVersion: "1.1"
+    useHttps: false
+    numberOfHttpClients: 1
+    concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
+    collectRequestTimings: false # unsupported by WRK --  other values will throw
+    responseSize: 0 # 0 for no content in response
+
+    # POST-specific parameters:
+    requestContentSize: 0 # 0 for no content
+    requestContentWriteSize: 81920
+    requestContentFlushAfterWrite: false
+    requestContentUnknownLength: false
+
+    # HttpClient-specific parameters:
+    http11MaxConnectionsPerServer: 0 #unlimited
+    http20EnableMultipleConnections: true
+    useWinHttpHandler: false
+    useHttpMessageInvoker: false
+    useDefaultRequestHeaders: false
+
+    # Request headers parameters:
+    headersDictionary:
+      none: '' # supported in WRK
+      connectionclose: '--header "Connection: close"' # supported in WRK
+      expectcontinue: '--header "Expect: 100-continue"'
+    requestHeaders: none
+    generatedStaticRequestHeadersCount: 0
+    generatedDynamicRequestHeadersCount: 0
+
+jobs:
+  httpClient:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 1200 #seconds
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --path /plaintext --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}"
