@@ -6,7 +6,8 @@ namespace HttpClientBenchmarks;
 public class ClientOptionsBinder : BinderBase<ClientOptions>
 {
     public static Option<string> AddressOption { get; } = new ("--address", "The server address to request") { IsRequired = true };
-    public static Option<string> PortOption { get; } = new ("--port", "The server port to request") { IsRequired = true };
+    public static Option<string> MinPortOption { get; } = new ("--minPort", "The min server port to request") { IsRequired = true };
+    public static Option<string> MaxPortOption { get; } = new ("--maxPort", "The max server port to request") { IsRequired = true };
     public static Option<bool> UseHttpsOption { get; } = new ("--useHttps", () => false, "Whether to use HTTPS");
     public static Option<string> PathOption { get; } = new ("--path", () => "/", "The server path to request");
     public static Option<Version> HttpVersionOption { get; } = new ("--httpVersion", "HTTP Version (1.1 or 2.0 or 3.0)") { IsRequired = true };
@@ -63,7 +64,8 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
         var options = new ClientOptions()
         {
             Address = parsed.GetValueForOption(AddressOption),
-            Port = parsed.GetValueForOption(PortOption),
+            minPort = parsed.GetValueForOption(MinPortOption),
+            maxPort = parsed.GetValueForOption(MaxPortOption),
             UseHttps = parsed.GetValueForOption(UseHttpsOption),
             Path = parsed.GetValueForOption(PathOption),
             HttpVersion = parsed.GetValueForOption(HttpVersionOption),
