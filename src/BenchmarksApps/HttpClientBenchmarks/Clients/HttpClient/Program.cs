@@ -147,7 +147,7 @@ class Program
         }
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, new Uri(s_url));
+        var request = CreateRequest(HttpMethod.Get, s_url);
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
