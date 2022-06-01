@@ -132,6 +132,7 @@ class Program
                     MaxConnectionsPerServer = max11ConnectionsPerServer,
                     EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections,
                     ConnectTimeout = Timeout.InfiniteTimeSpan,
+                    PooledConnectionIdleTimeout = TimeSpan.FromMilliseconds(1),
                 };
             }
 
