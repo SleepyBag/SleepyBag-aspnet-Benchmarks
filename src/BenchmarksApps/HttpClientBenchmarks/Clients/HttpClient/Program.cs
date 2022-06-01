@@ -180,7 +180,7 @@ class Program
             RegisterPercentiledMetric("http/contentend", "Time to last response content byte (ms)", "Time to last response content byte (ms)");
         }
 
-        Func<HttpMessageInvoker, Task<Metrics>> scenario;
+        Func<HttpMessageInvoker, int, int, Task<Metrics>> scenario;
         switch(s_options.Scenario)
         {
             case "get":
@@ -207,12 +207,18 @@ class Program
         });
 
         var tasks = new List<Task<Metrics>>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
+        int numPortPerHttpClient = (maxPort + 1 - minPort) / s_options.NumberOfHttpClients;
         for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
         {
             var client = s_httpClients[i];
+            int curMinPort = minPort + numPortPerHttpClient * i;
+            int curMaxPort = curMinPort + numPortPerHttpClient;
+            if (i == s_options.NumberOfHttpClients - 1) {
+                i = maxPort + 1;
+            }
             for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
-                tasks.Add(scenario(client));
+                tasks.Add(scenario(client, curMinPort, curMaxPort));
             }
         }
 
@@ -236,7 +242,7 @@ class Program
         }
     }
 
-    private static Task<Metrics> Get(HttpMessageInvoker client)
+    private static Task<Metrics> Get(HttpMessageInvoker client, int minPort, int maxPort)
     {
         return Measure(() => 
         {
@@ -246,7 +252,7 @@ class Program
         });
     }
 
-    private static Task<Metrics> Post(HttpMessageInvoker client)
+    private static Task<Metrics> Post(HttpMessageInvoker client, int minPort, int maxPort)
     {
         return Measure(async () => 
         {
