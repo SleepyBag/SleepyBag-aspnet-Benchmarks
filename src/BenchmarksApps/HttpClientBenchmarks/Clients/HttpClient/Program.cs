@@ -50,7 +50,11 @@ class Program
                 await Setup();
                 Log("Setup done");
 
-                await RunScenario();
+                var tasks = new List<Task>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
+                for (int i = 0; i != 64; ++i) {
+                    tasks.Add(RunScenario());
+                }
+                Task.WaitAll(tasks.ToArray());
                 Log("Scenario done");
             },
             new ClientOptionsBinder());
