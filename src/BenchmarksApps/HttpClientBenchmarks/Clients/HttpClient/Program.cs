@@ -17,6 +17,8 @@ class Program
     private static int minPort = 5000;
     private static int maxPort = 5000;
 
+    private static string[] hosts = {"https://172.29.0.10:{0}/plaintext", "https://172.29.0.9:{0}/plaintext"};
+
     private static Random random = new Random();
 
     private static ClientOptions s_options = null!;
@@ -247,7 +249,8 @@ class Program
         return Measure(() => 
         {
             var port = random.Next(minPort, maxPort);
-            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, port)));
+            var host = hosts[random.Next(0, 2)];
+            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(host, port)));
             return SendAsync(client, request);
         });
     }
