@@ -15,6 +15,7 @@ public class ClientOptions
     public int ConcurrencyPerHttpClient { get; set; }
     public int Http11MaxConnectionsPerServer { get; set; }
     public bool Http20EnableMultipleConnections { get; set; }
+    public int IdleConnectionTimeout { get; set; }
     public bool UseWinHttpHandler { get; set; }
     public bool UseHttpMessageInvoker { get; set; }
     public bool CollectRequestTimings { get; set; }
@@ -34,7 +35,7 @@ public class ClientOptions
     {
         return $"Address={Address}; MinPort={MinPort}, MaxPort={MaxPort}; UseHttps={UseHttps}; Path={Path}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; " +
             $"ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; " +
-            $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
+            $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; IdleConnectionTimeout={IdleConnectionTimeout}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
             $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
             $"ContentUnknownLength={ContentUnknownLength}; Headers=[{string.Join(", ", Headers.Select(h => $"\"{h.Name}: {h.Value}\""))}]; " +
