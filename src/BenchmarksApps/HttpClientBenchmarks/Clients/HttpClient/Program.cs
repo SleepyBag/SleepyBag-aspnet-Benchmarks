@@ -17,7 +17,7 @@ class Program
     private static int minPort = 5000;
     private static int maxPort = 5000;
 
-    private static string[] hosts = {"https://172.29.0.10:{0}/plaintext", "https://172.29.0.9:{0}/plaintext"};
+    private static string[]? hosts;
 
     private static Random random = new Random();
 
@@ -95,10 +95,11 @@ class Program
 
         minPort = Int32.Parse(s_options.MinPort);
         maxPort = Int32.Parse(s_options.MaxPort);
+        hosts = s_options.Address.Split(";");
 
-        var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:" + "{0}";
+        var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://" + "{0}:{1}";
         s_url = baseUrl + s_options.Path;
-        var full_url = new Uri(String.Format(s_url, minPort));
+        var full_url = new Uri(String.Format(s_url, hosts[0], minPort));
         Log("Base url: " + baseUrl);
         Log("Full url: " + full_url);
 
@@ -249,8 +250,8 @@ class Program
         return Measure(() => 
         {
             var port = random.Next(minPort, maxPort);
-            var host = hosts[random.Next(0, 2)];
-            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(host, port)));
+            var host = hosts[random.Next(0, hosts.Length)];
+            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, host, port)));
             return SendAsync(client, request);
         });
     }
@@ -260,7 +261,8 @@ class Program
         return Measure(async () => 
         {
             var port = random.Next(minPort, maxPort);
-            var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, port)));
+            var host = hosts[random.Next(0, hosts.Length)];
+            var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, host, port)));
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)
