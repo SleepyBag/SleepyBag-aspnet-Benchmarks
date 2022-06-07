@@ -18,6 +18,7 @@ class Program
     private static int maxPort = 5000;
 
     private static string[]? hosts;
+    private static string[]? proxies;
 
     private static Random random = new Random();
 
@@ -96,10 +97,11 @@ class Program
         minPort = Int32.Parse(s_options.MinPort);
         maxPort = Int32.Parse(s_options.MaxPort);
         hosts = s_options.Address.Split(";");
+        proxies = s_options.ProxyAddress.Split(";");
 
         var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://" + "{0}:{1}";
         s_url = baseUrl + s_options.Path;
-        var full_url = new Uri(String.Format(s_url, hosts[0], minPort));
+        var full_url = new Uri(String.Format(s_url, proxies[0], s_options.proxyPort));
         Log("Base url: " + baseUrl);
         Log("Full url: " + full_url);
 
@@ -251,7 +253,8 @@ class Program
         {
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
-            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, host, port)));
+            var proxy = proxies[random.Next(0, proxies.Length)];
+            var request = CreateRequest(HttpMethod.Get, new Uri(proxy), String.Format(s_url, host, port));
             return SendAsync(client, request);
         });
     }
@@ -262,7 +265,8 @@ class Program
         {
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
-            var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, host, port)));
+            var proxy = proxies[random.Next(0, proxies.Length)];
+            var request = CreateRequest(HttpMethod.Post, new Uri(proxy), String.Format(s_url, host, port));
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)
@@ -411,8 +415,11 @@ class Program
         }
     }
 
-    private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
-        new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+    private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri) {
+        var message = new HttpRequestMessage(method, proxyUri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+        message.Headers.Add("downstream", downstreamUri);
+        return message;
+    }
 
     private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) 
     {

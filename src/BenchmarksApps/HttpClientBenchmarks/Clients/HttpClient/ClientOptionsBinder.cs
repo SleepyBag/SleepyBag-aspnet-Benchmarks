@@ -5,7 +5,9 @@ namespace HttpClientBenchmarks;
 
 public class ClientOptionsBinder : BinderBase<ClientOptions>
 {
-    public static Option<string> AddressOption { get; } = new ("--address", "The server address to request") { IsRequired = true };
+    public static Option<string> AddressOption { get; } = new ("--address", "The downstream server address to request") { IsRequired = true };
+    public static Option<string> ProxyAddressOption { get; } = new ("--proxyAddress", "The proxy server address to request") { IsRequired = true };
+    public static Option<string> ProxyPortOption { get; } = new ("--proxyPort", "The port of proxy server") { IsRequired = true };
     public static Option<string> MinPortOption { get; } = new ("--minPort", "The min server port to request") { IsRequired = true };
     public static Option<string> MaxPortOption { get; } = new ("--maxPort", "The max server port to request") { IsRequired = true };
     public static Option<bool> UseHttpsOption { get; } = new ("--useHttps", () => false, "Whether to use HTTPS");
@@ -34,6 +36,8 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
     public static void AddOptionsToCommand(RootCommand command)
     {
         command.AddOption(AddressOption);
+        command.AddOption(ProxyAddressOption);
+        command.AddOption(ProxyPortOption);
         command.AddOption(MinPortOption);
         command.AddOption(MaxPortOption);
         command.AddOption(UseHttpsOption);
@@ -67,6 +71,8 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
         var options = new ClientOptions()
         {
             Address = parsed.GetValueForOption(AddressOption),
+            ProxyAddress = parsed.GetValueForOption(ProxyAddressOption),
+            ProxyPort = parsed.GetValueForOption(ProxyPortOption),
             MinPort = parsed.GetValueForOption(MinPortOption),
             MaxPort = parsed.GetValueForOption(MaxPortOption),
             UseHttps = parsed.GetValueForOption(UseHttpsOption),
