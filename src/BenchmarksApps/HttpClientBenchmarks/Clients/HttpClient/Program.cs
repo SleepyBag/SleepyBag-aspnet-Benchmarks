@@ -217,7 +217,7 @@ class Program
             int curMinPort = minPort + numPortPerHttpClient * i;
             int curMaxPort = curMinPort + numPortPerHttpClient;
             if (i == s_options.NumberOfHttpClients - 1) {
-                i = maxPort + 1;
+                curMaxPort = maxPort + 1;
             }
             for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
