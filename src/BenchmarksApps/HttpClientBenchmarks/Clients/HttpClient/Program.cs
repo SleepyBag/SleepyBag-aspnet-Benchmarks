@@ -101,7 +101,7 @@ class Program
 
         var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://" + "{0}:{1}";
         s_url = baseUrl + s_options.Path;
-        var full_url = new Uri(String.Format(s_url, proxies[0], s_options.proxyPort));
+        var full_url = new Uri(String.Format(s_url, proxies[0], s_options.ProxyPort));
         Log("Base url: " + baseUrl);
         Log("Full url: " + full_url);
 
@@ -162,7 +162,7 @@ class Program
         }
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, full_url);
+        var request = CreateRequest(HttpMethod.Get, full_url, hosts[0], minPort.ToString());
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
@@ -254,7 +254,7 @@ class Program
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
             var proxy = proxies[random.Next(0, proxies.Length)];
-            var request = CreateRequest(HttpMethod.Get, new Uri(proxy), String.Format(s_url, host, port));
+            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
             return SendAsync(client, request);
         });
     }
@@ -266,7 +266,7 @@ class Program
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
             var proxy = proxies[random.Next(0, proxies.Length)];
-            var request = CreateRequest(HttpMethod.Post, new Uri(proxy), String.Format(s_url, host, port));
+            var request = CreateRequest(HttpMethod.Post,new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)
@@ -415,9 +415,10 @@ class Program
         }
     }
 
-    private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri) {
+    private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri, String downstreamPort) {
         var message = new HttpRequestMessage(method, proxyUri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
         message.Headers.Add("downstream", downstreamUri);
+        message.Headers.Add("downstreamPort", downstreamPort);
         return message;
     }
 
