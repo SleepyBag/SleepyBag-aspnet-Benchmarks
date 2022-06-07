@@ -212,15 +212,12 @@ class Program
         });
 
         var tasks = new List<Task<Metrics>>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
-        int numPortPerHttpClient = (maxPort + 1 - minPort) / proxies.Length;
+        int numOfTasks = (maxPort + 1 - minPort) / proxies.Length;
         for (int i = 0; i < proxies.Length; ++i)
         {
             var client = s_httpClients[0];
-            int curMinPort = minPort + numPortPerHttpClient * i;
-            int curMaxPort = curMinPort + numPortPerHttpClient;
-            if (i == s_options.NumberOfHttpClients - 1) {
-                i = maxPort + 1;
-            }
+            int curMinPort = minPort + numOfTasks * i;
+            int curMaxPort = curMinPort + numOfTasks;
             for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
                 tasks.Add(scenario(client, proxies[i], curMinPort, curMaxPort));
