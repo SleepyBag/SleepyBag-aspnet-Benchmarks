@@ -266,7 +266,7 @@ class Program
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
             var proxy = proxies[random.Next(0, proxies.Length)];
-            var request = CreateRequest(HttpMethod.Post,new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
+            var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)
@@ -417,8 +417,7 @@ class Program
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri, String downstreamPort) {
         var message = new HttpRequestMessage(method, proxyUri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
-        message.Headers.Add("downstream", downstreamUri);
-        message.Headers.Add("downstreamPort", downstreamPort);
+        message.Headers.Add("downstream", String.Format("{0}:{1}", downstreamUri, downstreamPort));
         return message;
     }
 
