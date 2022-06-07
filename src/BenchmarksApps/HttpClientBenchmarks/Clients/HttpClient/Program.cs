@@ -185,7 +185,7 @@ class Program
             RegisterPercentiledMetric("http/contentend", "Time to last response content byte (ms)", "Time to last response content byte (ms)");
         }
 
-        Func<HttpMessageInvoker, int, int, Task<Metrics>> scenario;
+        Func<HttpMessageInvoker, String, int, int, Task<Metrics>> scenario;
         switch(s_options.Scenario)
         {
             case "get":
@@ -212,10 +212,10 @@ class Program
         });
 
         var tasks = new List<Task<Metrics>>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
-        int numPortPerHttpClient = (maxPort + 1 - minPort) / s_options.NumberOfHttpClients;
-        for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
+        int numPortPerHttpClient = (maxPort + 1 - minPort) / proxies.Length;
+        for (int i = 0; i < proxies.Length; ++i)
         {
-            var client = s_httpClients[i];
+            var client = s_httpClients[0];
             int curMinPort = minPort + numPortPerHttpClient * i;
             int curMaxPort = curMinPort + numPortPerHttpClient;
             if (i == s_options.NumberOfHttpClients - 1) {
@@ -223,7 +223,7 @@ class Program
             }
             for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
-                tasks.Add(scenario(client, curMinPort, curMaxPort));
+                tasks.Add(scenario(client, proxies[i], curMinPort, curMaxPort));
             }
         }
 
@@ -247,25 +247,23 @@ class Program
         }
     }
 
-    private static Task<Metrics> Get(HttpMessageInvoker client, int minPort, int maxPort)
+    private static Task<Metrics> Get(HttpMessageInvoker client, String proxy, int minPort, int maxPort)
     {
         return Measure(() => 
         {
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
-            var proxy = proxies[random.Next(0, proxies.Length)];
             var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
             return SendAsync(client, request);
         });
     }
 
-    private static Task<Metrics> Post(HttpMessageInvoker client, int minPort, int maxPort)
+    private static Task<Metrics> Post(HttpMessageInvoker client, String proxy, int minPort, int maxPort)
     {
         return Measure(async () => 
         {
             var port = random.Next(minPort, maxPort);
             var host = hosts[random.Next(0, hosts.Length)];
-            var proxy = proxies[random.Next(0, proxies.Length)];
             var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
 
             Task<HttpResponseMessage> responseTask;
