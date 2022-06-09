@@ -160,7 +160,8 @@ class Program
         CreateRequestContentData();
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, full_url, hosts[0], minPort.ToString());
+        var request = CreateRequest(HttpMethod.Post, full_url, hosts[0], minPort.ToString());
+        request.Content = new ByteArrayContent(s_requestContentData!);
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
