@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Crank.EventSources;
 
 namespace HttpClientBenchmarks;
@@ -156,10 +157,7 @@ class Program
             }
         }
 
-        if (s_options.ContentSize > 0)
-        {
-            CreateRequestContentData();
-        }
+        CreateRequestContentData();
 
         // First request to the server; to ensure everything started correctly
         var request = CreateRequest(HttpMethod.Get, full_url, hosts[0], minPort.ToString());
@@ -186,17 +184,7 @@ class Program
         }
 
         Func<HttpMessageInvoker, String, int, int, Task<Metrics>> scenario;
-        switch(s_options.Scenario)
-        {
-            case "get":
-                scenario = Get;
-                break;
-            case "post":
-                scenario = Post;
-                break;
-            default:
-                throw new ArgumentException($"Unknown scenario: {s_options.Scenario}");
-        }
+        scenario = Post;
 
         s_isWarmup = true;
         s_isRunning = true;
@@ -244,17 +232,6 @@ class Program
         }
     }
 
-    private static Task<Metrics> Get(HttpMessageInvoker client, String proxy, int minPort, int maxPort)
-    {
-        return Measure(() => 
-        {
-            var port = random.Next(minPort, maxPort);
-            var host = hosts[random.Next(0, hosts.Length)];
-            var request = CreateRequest(HttpMethod.Get, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
-            return SendAsync(client, request);
-        });
-    }
-
     private static Task<Metrics> Post(HttpMessageInvoker client, String proxy, int minPort, int maxPort)
     {
         return Measure(async () => 
@@ -264,39 +241,36 @@ class Program
             var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
 
             Task<HttpResponseMessage> responseTask;
-            if (s_useByteArrayContent)
-            {
-                request.Content = new ByteArrayContent(s_requestContentData!);
-                responseTask = SendAsync(client, request);
-            }
-            else
-            {
-                var requestContent = new StreamingHttpContent();
-                request.Content = requestContent;
+            request.Content = new ByteArrayContent(s_requestContentData!);
+            responseTask = SendAsync(client, request);
+            // else
+            // {
+            //     var requestContent = new StreamingHttpContent();
+            //     request.Content = requestContent;
 
-                if (!s_options.ContentUnknownLength)
-                {
-                    request.Content.Headers.ContentLength = s_options.ContentSize;
-                }
-                // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
+            //     if (!s_options.ContentUnknownLength)
+            //     {
+            //         request.Content.Headers.ContentLength = s_options.ContentSize;
+            //     }
+            //     // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
 
-                responseTask = SendAsync(client, request);
-                var requestContentStream = await requestContent.GetStreamAsync();
+            //     responseTask = SendAsync(client, request);
+            //     var requestContentStream = await requestContent.GetStreamAsync();
 
-                for (int i = 0; i < s_fullChunkCount; ++i)
-                {
-                    await requestContentStream.WriteAsync(s_requestContentData);
-                    if (s_options.ContentFlushAfterWrite)
-                    {
-                        await requestContentStream.FlushAsync();
-                    }
-                }
-                if (s_requestContentLastChunk != null)
-                {
-                    await requestContentStream.WriteAsync(s_requestContentLastChunk);
-                }
-                requestContent.CompleteStream();
-            }
+            //     for (int i = 0; i < s_fullChunkCount; ++i)
+            //     {
+            //         await requestContentStream.WriteAsync(s_requestContentData);
+            //         if (s_options.ContentFlushAfterWrite)
+            //         {
+            //             await requestContentStream.FlushAsync();
+            //         }
+            //     }
+            //     if (s_requestContentLastChunk != null)
+            //     {
+            //         await requestContentStream.WriteAsync(s_requestContentLastChunk);
+            //     }
+            //     requestContent.CompleteStream();
+            // }
 
             return await responseTask;
         });
@@ -386,28 +360,16 @@ class Program
 
     private static void CreateRequestContentData()
     {
-        s_useByteArrayContent = !s_options.ContentUnknownLength && (!s_options.ContentFlushAfterWrite || s_options.ContentWriteSize >= s_options.ContentSize); // no streaming
-        if (s_useByteArrayContent)
-        {
-            s_fullChunkCount = 1;
-            s_requestContentData = new byte[s_options.ContentSize];
-            Array.Fill(s_requestContentData, (byte)'a');
-        }
-        else
-        {
-            s_fullChunkCount = s_options.ContentSize / s_options.ContentWriteSize;
-            if (s_fullChunkCount != 0)
-            {
-                s_requestContentData = new byte[s_options.ContentWriteSize];
-                Array.Fill(s_requestContentData, (byte)'a');
-            }
-            int lastChunkSize = s_options.ContentSize % s_options.ContentWriteSize;
-            if (lastChunkSize != 0)
-            {
-                s_requestContentLastChunk = new byte[lastChunkSize];
-                Array.Fill(s_requestContentLastChunk, (byte)'a');
+        String[] downstreams = new string[hosts.Length * (maxPort - minPort + 1)];
+        int i = 0;
+        foreach (var host in hosts) {
+            for (int port = minPort; port <= maxPort; ++port) {
+                downstreams[i++] = String.Format("{0}:{1}", host, port);
             }
         }
+        var content = String.Join(';', downstreams);
+        s_requestContentData = Encoding.UTF8.GetBytes(content);
+
     }
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri, String downstreamPort) {
