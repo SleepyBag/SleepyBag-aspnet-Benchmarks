@@ -31,6 +31,7 @@ class Program
     private static List<(string Name, string? Value)> s_generatedStaticHeaders = new();
     private static List<string> s_generatedDynamicHeaderNames = new();
 
+    private static String? s_downstream = null;
     private static byte[]? s_requestContentData = null;
     private static byte[]? s_requestContentLastChunk = null;
     private static int s_fullChunkCount;
@@ -161,7 +162,7 @@ class Program
 
         // First request to the server; to ensure everything started correctly
         var request = CreateRequest(HttpMethod.Post, full_url, hosts[0], minPort.ToString());
-        request.Content = new ByteArrayContent(s_requestContentData!);
+        // request.Content = new ByteArrayContent(s_requestContentData!);
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
@@ -242,7 +243,6 @@ class Program
             var request = CreateRequest(HttpMethod.Post, new Uri(String.Format(s_url, proxy, s_options.ProxyPort)), host, port.ToString());
 
             Task<HttpResponseMessage> responseTask;
-            request.Content = new ByteArrayContent(s_requestContentData!);
             responseTask = SendAsync(client, request);
             // else
             // {
@@ -366,14 +366,13 @@ class Program
         foreach (var host in hosts) {
             downstreams[i++] = String.Format("{0}:{1}-{2}", host, minPort, maxPort);
         }
-        var content = String.Join(';', downstreams);
-        s_requestContentData = Encoding.ASCII.GetBytes(content);
+        s_downstream = String.Join(';', downstreams);
 
     }
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri proxyUri, String downstreamUri, String downstreamPort) {
         var message = new HttpRequestMessage(method, proxyUri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
-        message.Headers.Add("downstream", String.Format("{0}:{1}", downstreamUri, downstreamPort));
+        message.Headers.Add("downstream", s_downstream);
         return message;
     }
 
