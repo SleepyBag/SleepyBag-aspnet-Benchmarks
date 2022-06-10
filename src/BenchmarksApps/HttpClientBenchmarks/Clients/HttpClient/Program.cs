@@ -361,12 +361,10 @@ class Program
 
     private static void CreateRequestContentData()
     {
-        String[] downstreams = new string[hosts.Length * (maxPort - minPort + 1)];
+        String[] downstreams = new string[hosts.Length];
         int i = 0;
         foreach (var host in hosts) {
-            for (int port = minPort; port <= maxPort; ++port) {
-                downstreams[i++] = String.Format("{0}:{1}", host, port);
-            }
+            downstreams[i++] = String.Format("{0}:{1}-{2}", host, minPort, maxPort);
         }
         var content = String.Join(';', downstreams);
         s_requestContentData = Encoding.ASCII.GetBytes(content);
