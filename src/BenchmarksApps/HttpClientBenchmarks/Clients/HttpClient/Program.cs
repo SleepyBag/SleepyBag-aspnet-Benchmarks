@@ -292,10 +292,10 @@ class Program
         {
             if (isWarmup && !s_isWarmup)
             {
-                if (metrics.SuccessRequests == 0)
-                {
-                    throw new Exception($"No successful requests during warmup.");
-                }
+                // if (metrics.SuccessRequests == 0)
+                // {
+                //     throw new Exception($"No successful requests during warmup.");
+                // }
                 isWarmup = false;
                 metrics.SuccessRequests = 0;
                 metrics.BadStatusRequests = 0;
