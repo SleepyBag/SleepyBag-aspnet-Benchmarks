@@ -369,7 +369,7 @@ class Program
             }
         }
         var content = String.Join(';', downstreams);
-        s_requestContentData = Encoding.UTF8.GetBytes(content);
+        s_requestContentData = Encoding.ASCII.GetBytes(content);
 
     }
 
